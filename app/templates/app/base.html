@@ -1,0 +1,339 @@
+{% load static %}
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Styles personnalisés */
+        .navbar {
+            background-color: #343a40; /* Couleur de fond sombre pour la navbar */
+        }
+        
+
+
+
+        .chatbot-icon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #f0f0f0;
+            color: gray;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 24px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+        }
+
+        .chatbot-container {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 300px;
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            display: none;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        .chatbot-header {
+            background-color: #0073e6;
+            color: #fff;
+            padding: 10px;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chatbot-header h5 {
+            margin: 0;
+        }
+
+        .close {
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .chatbot-body {
+            padding: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chatbot-message {
+            margin: 5px 0;
+            padding: 8px;
+            border-radius: 5px;
+        }
+
+        .chatbot-message.bot {
+            background-color: #f0f0f0;
+            align-self: flex-start;
+        }
+
+        .chatbot-message.user {
+            background-color: #0073e6;
+            color: #fff;
+            align-self: flex-end;
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            font-style: italic;
+            color: gray;
+            margin: 5px 0;
+        }
+
+        .typing-indicator i {
+            margin-right: 5px;
+        }
+
+        .chatbot-footer {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ddd;
+        }
+
+        .chatbot-footer input[type="text"] {
+            flex: 1;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-right: 5px;
+        }
+
+        .chatbot-footer button {
+            background-color: #0073e6;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+
+    {% block css %} {% endblock %}
+
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <a class="navbar-brand" href="#"> RadiAi </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="{% url 'home' %}">Home</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      models
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                      <a class="dropdown-item" href="{% url 'chest_Xray' %}">Chest X-ray</a>
+                      <div class="dropdown-divider"></div>
+                      <a class="dropdown-item" href="{% url 'chest_CT' %}">Chest Scanner</a>
+                      <div class="dropdown-divider"></div>
+                      <a class="dropdown-item" href="{% url 'brain_MRI' %}">Brain MRI</a>
+                    </div>
+                  </li>
+                  
+            </ul>
+           <!-- <form class="form-inline">
+                <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            </form>-->
+        </div>
+    </nav>
+
+
+
+    {% block content %}
+    
+    
+    {% endblock %}
+
+
+
+
+
+    <div class="chatbot-icon" id="chatbotIcon">
+        <i class="fas fa-comments"></i>
+    </div>
+
+    <div class="chatbot-container" id="chatbotContainer">
+        <div class="chatbot-header">
+            <h5>Chatbot</h5>
+            <span id="closeChatbot" class="close">&times;</span>
+        </div>
+        <div class="chatbot-body" id="chatbotBody"></div>
+        <div class="chatbot-footer">
+            <input type="text" id="chatbotInput" placeholder="Write a message...">
+            <button id="sendMessage"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <script>
+        const chatbotIcon = document.getElementById("chatbotIcon");
+        const chatbotContainer = document.getElementById("chatbotContainer");
+        const closeChatbot = document.getElementById("closeChatbot");
+        const chatbotBody = document.getElementById("chatbotBody");
+        const chatbotInput = document.getElementById("chatbotInput");
+        const sendMessage = document.getElementById("sendMessage");
+
+        chatbotIcon.addEventListener("click", () => {
+            chatbotContainer.style.display = chatbotContainer.style.display === "flex" ? "none" : "flex";
+            if (chatbotContainer.style.display === "flex") {
+                initializeChat();
+            }
+        });
+
+        closeChatbot.addEventListener("click", () => {
+            chatbotContainer.style.display = "none";
+        });
+
+        sendMessage.addEventListener("click", sendMessageToBackend);
+        chatbotInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") sendMessageToBackend();
+        });
+
+        function initializeChat() {
+            addMessageToChat("bot", "Hello! How can I help you today?");
+        }
+
+        function sendMessageToBackend() {
+            const message = chatbotInput.value.trim();
+            if (!message) return;
+
+            // Add user's message
+            addMessageToChat("user", message);
+            chatbotInput.value = "";
+
+            // Show typing indicator
+            const typingIndicator = document.createElement("div");
+            typingIndicator.classList.add("typing-indicator");
+            typingIndicator.innerHTML = '<i class="fas fa-spinner fa-spin"></i> writing...';
+            chatbotBody.appendChild(typingIndicator);
+            chatbotBody.scrollTop = chatbotBody.scrollHeight;
+
+            // Send to backend
+            fetch('/api/app/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Remove typing indicator
+                    chatbotBody.removeChild(typingIndicator);
+
+                    // Add bot's response
+                    addMessageToChat("bot", data.response);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    chatbotBody.removeChild(typingIndicator);
+                    addMessageToChat("bot", "An error occurred, please try again.");
+                });
+        }
+
+        function addMessageToChat(sender, text) {
+            const messageDiv = document.createElement("div");
+            messageDiv.classList.add("chatbot-message", sender);
+            messageDiv.textContent = text;
+            chatbotBody.appendChild(messageDiv);
+            chatbotBody.scrollTop = chatbotBody.scrollHeight;
+        }
+    </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white mt-5 pt-4 pb-4">
+        <div class="container">
+            <div class="row">
+                <!-- À propos -->
+                <div class="col-md-4">
+                    <h5>À propos de nous</h5>
+                    <p>Nous sommes une entreprise dédiée à fournir les meilleurs services dans notre domaine. Nous croyons en la qualité, l'innovation, et la satisfaction de nos clients.</p>
+                </div>
+                
+                <!-- Contact -->
+                <div class="col-md-4">
+                    <h5>Contact</h5>
+                    <ul class="list-unstyled">
+                        <li><strong>Email :</strong> contact@monsite.com</li>
+                        <li><strong>Téléphone :</strong> +212 6 123 45678</li>
+                        <li><strong>Adresse :</strong> 123 Rue Exemple, Ville, Pays</li>
+                    </ul>
+                </div>
+                
+                <!-- Liens utiles -->
+                <div class="col-md-4">
+                    <h5>Liens utiles</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="index.html" class="text-white">Accueil</a></li>
+                        <li><a href="#" class="text-white">Nos services</a></li>
+                        <li><a href="#" class="text-white">Politique de confidentialité</a></li>
+                        <li><a href="#" class="text-white">Conditions d'utilisation</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Réseaux sociaux -->
+            <div class="text-center mt-4">
+                <a href="https://www.facebook.com" class="text-white mr-3"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://www.twitter.com" class="text-white mr-3"><i class="fab fa-twitter"></i></a>
+                <a href="https://www.linkedin.com" class="text-white mr-3"><i class="fab fa-linkedin-in"></i></a>
+            </div>
+            
+            <!-- Copyright -->
+            <div class="text-center mt-3">
+                <small>&copy; 2024 MonSite. Tous droits réservés.</small>
+            </div>
+        </div>
+    </footer>
+
+<!-- Font Awesome (pour les icônes des réseaux sociaux) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
