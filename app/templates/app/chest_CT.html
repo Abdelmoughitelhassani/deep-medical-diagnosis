@@ -1,0 +1,283 @@
+{% extends 'app/base.html' %}
+{% load static %}
+
+
+{% block css %}
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+    }
+
+    body {
+        background-color: #f4f4f4;
+    }
+
+    .upload-container {
+        width: 400px;
+        padding: 30px;
+        text-align: center;
+        background-color: #ffffff;
+        border: 2px dashed #0073e6;
+        border-radius: 10px;
+        transition: border-color 0.3s;
+        cursor: pointer;
+        margin-top: 50px;
+    }
+
+    .upload-container:hover {
+        border-color: #005bb5;
+    }
+
+    .upload-container h2 {
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+    .upload-container p {
+        color: #555;
+        font-size: 14px;
+    }
+
+    .upload-input {
+        display: none;
+    }
+
+    .upload-preview {
+        margin-top: 15px;
+        max-width: 100%;
+        border-radius: 5px;
+        display: none;
+    }
+
+    .sante-text {
+        margin-top: 40px;
+        color: #333;
+        font-size: 16px;
+        text-align: center;
+    }
+
+    form {
+            text-align: center;
+            width: 400px;
+            margin: 0 auto;
+        }
+
+    /* Style de la zone de dépôt */
+    .upload-container {
+        border: 2px dashed #007bff;
+        border-radius: 8px;
+        padding: 20px;
+        width: 100%;
+        text-align: center;
+        cursor: pointer;
+        box-sizing: border-box;
+        background-color: #f0f8ff;
+    }
+
+    .upload-container p {
+        margin: 0;
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .upload-container small {
+        color: #777;
+        font-size: 14px;
+    }
+
+    #fileInput {
+        display: none; /* On cache l'input */
+    }
+
+    img {
+        margin-top: 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 5px;
+        width: 20%;
+    }
+
+
+
+
+</style>
+{% endblock %}
+
+
+
+{% block content %}
+
+
+    <div class="container my-5">
+        <!-- Titre principal -->
+        <h1 class="text-center text-primary mb-4">Analyse de Tomodensitogrammes Thoraciques (CT) avec l'Intelligence Artificielle</h1>
+    
+        <form method="POST" enctype="multipart/form-data" action="/predict_image_CT/" id="imageForm">
+            {% csrf_token %}
+        
+            <!-- Zone de dépôt stylisée -->
+            <div class="upload-container text-center" id="dropArea" style="border: 2px dashed #ccc; padding: 20px; position: relative;">
+                <p>Déposez ou sélectionnez une image</p>
+                <small>Glissez-déposez une image ici ou cliquez pour en sélectionner une.</small>
+                <input type="file" name="image" id="fileInput" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
+        
+                <!-- Image affichée avec taille agrandie -->
+                {% if file_path_name %}
+                    <div style="margin-top: 20px;">
+                        <img src="{{ file_path_name }}" alt="imagename" 
+                             style="max-width: 100%; max-height: 500px; width: auto; height: auto; border: 1px solid #ccc; padding: 5px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
+                    </div>
+                {% endif %}
+            </div>
+        
+            <!-- Résultat de la classification -->
+            <h2 class="text-center mt-4">
+                {% if predicted_class %}
+                    La classification de l'image est : 
+                    {% if predicted_class == "Normal" %}
+                    <span style="color: green; font-weight: bold;">{{ predicted_class }}</span>
+                    {% else %}
+                        <span style="color: red; font-weight: bold;">{{ predicted_class }}</span>
+                    
+                    {% endif %}
+                {% endif %}
+            </h2>
+        </form>
+        <!--<h5 style="color: red;">Note : </h5>si vous avez des questions ask le chatbot-->
+
+        <br><br><br><br><br>
+        <!-- Texte descriptif -->
+        <div class="mb-5">
+            <h2>Qu'est-ce qu'un Chest CT ?</h2>
+            <p>Un <strong>Chest CT</strong> (Tomodensitogramme Thoracique) est une méthode avancée d'imagerie médicale qui utilise des rayons X pour créer des images détaillées en coupe de la poitrine. Il permet de visualiser les poumons, le cœur, les vaisseaux sanguins, et d'autres structures internes avec précision.</p>
+        </div>
+        
+
+        <!-- Image illustrative -->
+        <div class="text-center my-4">
+            <img src="{% static 'images/page_ct.jpg' %}" class="img-fluid rounded shadow" alt="Chest CT" style="width: 60%; height: auto;">
+        </div>
+
+
+        <!-- Section sur les applications -->
+        <div class="mb-5">
+            <h2>Applications principales</h2>
+            <ul class="list-group">
+                <li class="list-group-item">Diagnostic de la pneumonie et autres infections pulmonaires</li>
+                <li class="list-group-item">Détection précoce du cancer du poumon</li>
+                <li class="list-group-item">Identification des embolies pulmonaires</li>
+                <li class="list-group-item">Évaluation des traumatismes thoraciques</li>
+                <li class="list-group-item">Analyse des anomalies cardiaques</li>
+            </ul>
+        </div>
+    
+        <!-- Conseils de santé -->
+        <div class="mb-5">
+            <h2>Santé et bien-être pulmonaire</h2>
+            <p>Pour préserver vos poumons :</p>
+            <ul>
+                <li>Évitez de fumer pour réduire les risques de maladies respiratoires.</li>
+                <li>Faites de l'exercice régulièrement pour améliorer la capacité pulmonaire.</li>
+                <li>Adoptez une alimentation riche en fruits et légumes pour leurs antioxydants.</li>
+            </ul>
+        </div>
+    
+        <!-- Titre principal -->
+    <h2 class="text-center text-primary mb-4">Différences entre le Chest CT et la Radiographie Thoracique (X-ray)</h2>
+
+    <!-- Comparaison des méthodes -->
+    <div class="row">
+        <div class="col-md-6">
+            <h3>Radiographie Thoracique (X-ray)</h3>
+            <p>La radiographie thoracique est une méthode simple et rapide d'imagerie médicale qui utilise une faible dose de rayons X pour capturer une vue globale de la poitrine. Elle est couramment utilisée comme première ligne d'investigation.</p>
+            <ul>
+                <li><strong>Avantages :</strong> Rapide, peu coûteuse, faible dose de radiation.</li>
+                <li><strong>Limites :</strong> Moins précise pour les détails fins et les diagnostics complexes.</li>
+                <li><strong>Indications :</strong> Détection de fractures, pneumonies, élargissements cardiaques, etc.</li>
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <h3>Tomodensitogramme Thoracique (Chest CT)</h3>
+            <p>Le Chest CT offre une vue en coupe détaillée des structures thoraciques en utilisant des rayons X à haute résolution combinés à une reconstruction informatique. C'est une méthode avancée pour des diagnostics plus complexes.</p>
+            <ul>
+                <li><strong>Avantages :</strong> Précision élevée, visualisation en 3D, utile pour détecter des anomalies subtiles.</li>
+                <li><strong>Limites :</strong> Plus coûteux, exposition à une dose plus élevée de radiation.</li>
+                <li><strong>Indications :</strong> Détection de tumeurs, embolies pulmonaires, maladies interstitielles pulmonaires.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Solutions -->
+    <div class="my-5">
+        <h3>Solutions proposées par chaque méthode</h3>
+        <ul>
+            <li><strong>X-ray :</strong> Idéal pour une première évaluation rapide des troubles respiratoires ou thoraciques.</li>
+            <li><strong>Chest CT :</strong> Fournit un diagnostic précis et détaillé, particulièrement utile pour les maladies graves ou complexes.</li>
+        </ul>
+    </div>
+
+    <!-- Conséquences d'une utilisation inadéquate -->
+    <div class="my-5">
+        <h3>Conséquences d'une mauvaise utilisation</h3>
+        <p>L'utilisation inadéquate ou excessive de ces techniques peut entraîner :</p>
+        <ul>
+            <li><strong>Radiation cumulée :</strong> L'exposition répétée aux rayons X, en particulier pour les CT, peut augmenter légèrement le risque de cancer à long terme.</li>
+            <li><strong>Surdiagnostic :</strong> Les détails supplémentaires du CT peuvent conduire à des diagnostics excessifs ou inutiles.</li>
+            <li><strong>Coût accru :</strong> Les CT sont plus coûteux et peuvent ne pas être nécessaires dans les cas simples.</li>
+        </ul>
+    </div>
+
+    <!-- Conclusion et conseil -->
+    <div class="text-center mt-5">
+        <h4 class="text-primary">Quelle méthode choisir ?</h4>
+        <p>La radiographie X est idéale pour une première analyse rapide et générale, tandis que le Chest CT est réservé aux cas nécessitant une analyse approfondie et détaillée. Consultez votre médecin pour choisir l'option la plus adaptée à votre situation.</p>
+    </div>
+
+
+        
+    </div>
+    
+
+
+
+
+    
+    <script>
+        const dropArea = document.getElementById('dropArea');
+        const fileInput = document.getElementById('fileInput');
+        const form = document.getElementById('imageForm');
+
+        // Lorsque la zone est cliquée, ouvrir la boîte de dialogue
+        dropArea.addEventListener('click', () => fileInput.click());
+
+        // Effet de glisser-déposer
+        dropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropArea.style.backgroundColor = '#e0f0ff';
+        });
+
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.style.backgroundColor = '#f0f8ff';
+        });
+
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.style.backgroundColor = '#f0f8ff';
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files; // Lier les fichiers à l'input
+                form.submit(); // Soumettre automatiquement le formulaire
+            }
+        });
+
+        // Soumettre le formulaire dès qu'un fichier est sélectionné via la boîte de dialogue
+        fileInput.addEventListener('change', () => {
+            form.submit(); // Soumettre automatiquement le formulaire
+        });
+    </script>
+
+{% endblock %}

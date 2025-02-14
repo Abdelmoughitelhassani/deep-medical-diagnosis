@@ -1,0 +1,274 @@
+{% extends 'app/base.html' %}
+{% load static %}
+
+
+{% block css %}
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+    }
+
+    body {
+        background-color: #f4f4f4;
+    }
+
+    .upload-container {
+        width: 400px;
+        padding: 30px;
+        text-align: center;
+        background-color: #ffffff;
+        border: 2px dashed #0073e6;
+        border-radius: 10px;
+        transition: border-color 0.3s;
+        cursor: pointer;
+        margin-top: 50px;
+    }
+
+    .upload-container:hover {
+        border-color: #005bb5;
+    }
+
+    .upload-container h2 {
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+    .upload-container p {
+        color: #555;
+        font-size: 14px;
+    }
+
+    .upload-input {
+        display: none;
+    }
+
+    .upload-preview {
+        margin-top: 15px;
+        max-width: 100%;
+        border-radius: 5px;
+        display: none;
+    }
+
+    .sante-text {
+        margin-top: 40px;
+        color: #333;
+        font-size: 16px;
+        text-align: center;
+    }
+
+    form {
+            text-align: center;
+            width: 400px;
+            margin: 0 auto;
+        }
+
+    /* Style de la zone de dépôt */
+    .upload-container {
+        border: 2px dashed #007bff;
+        border-radius: 8px;
+        padding: 20px;
+        width: 100%;
+        text-align: center;
+        cursor: pointer;
+        box-sizing: border-box;
+        background-color: #f0f8ff;
+    }
+
+    .upload-container p {
+        margin: 0;
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .upload-container small {
+        color: #777;
+        font-size: 14px;
+    }
+
+    #fileInput {
+        display: none; /* On cache l'input */
+    }
+
+    img {
+        margin-top: 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 5px;
+        width: 20%;
+    }
+
+
+
+</style>
+{% endblock %}
+
+
+
+{% block content %}
+
+
+    <div class="container my-5">
+        <!-- Titre principal -->
+        <h1 class="text-center text-primary mb-4">Analyse Assistée par IA pour Radiographies Thoraciques (Chest X-ray)</h1>
+    
+        <form method="POST" enctype="multipart/form-data" action="/predict_image_Xray/" id="imageForm">
+            {% csrf_token %}
+        
+            <!-- Zone de dépôt stylisée -->
+            <div class="upload-container text-center" id="dropArea" style="border: 2px dashed #ccc; padding: 20px; position: relative;">
+                <p>Déposez ou sélectionnez une image</p>
+                <small>Glissez-déposez une image ici ou cliquez pour en sélectionner une.</small>
+                <input type="file" name="image" id="fileInput" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
+        
+                <!-- Image affichée avec taille agrandie -->
+                {% if file_path_name %}
+                    <div style="margin-top: 20px;">
+                        <img src="{{ file_path_name }}" alt="imagename" 
+                             style="max-width: 100%; max-height: 500px; width: auto; height: auto; border: 1px solid #ccc; padding: 5px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
+                    </div>
+                {% endif %}
+            </div>
+        
+            <!-- Résultat de la classification -->
+            <h2 class="text-center mt-4">
+                {% if predicted_class %}
+                    La classification de l'image est : 
+                    {% if predicted_class == "Normal" %}
+                        <span style="color: green; font-weight: bold;">{{ predicted_class }}</span>
+                    {% else %}
+                        <span style="color: red; font-weight: bold;">{{ predicted_class }}</span>
+                    
+                    {% endif %}
+                {% endif %}
+            </h2>
+        </form>
+
+        <!--<h5 style="color: red;">Note : </h5>si vous avez des questions ask le chatbot-->
+        
+        <br><br><br><br><br>
+
+
+        <!-- Introduction -->
+        <div class="row">
+            <div class="col-md-12">
+                <p class="lead text-justify">
+                    La radiographie thoracique est une technique d'imagerie médicale qui permet de capturer des images des structures internes de la poitrine grâce à l'utilisation de rayons X. 
+                    Elle est largement utilisée en médecine pour diagnostiquer, surveiller et traiter un large éventail de maladies pulmonaires et cardiaques.
+                </p>
+            </div>
+        </div>
+    
+        <!-- Image illustrative -->
+        <div class="text-center my-4">
+            <img src="{% static 'images/page_xray.jpg' %}" class="img-fluid rounded shadow" alt="Chest X-ray" style="width: 60%; height: auto;">
+        </div>
+    
+        <!-- Processus -->
+        <div class="my-4">
+            <h3>Comment fonctionne une Chest X-ray ?</h3>
+            <p class="text-justify">
+                Une radiographie utilise des rayons X, qui traversent le corps et sont absorbés différemment par les tissus en fonction de leur densité. Les os apparaissent blancs, tandis que les poumons, remplis d'air, apparaissent sombres. Cette distinction permet aux médecins d'identifier des anomalies telles que des infections, des tumeurs ou des fractures.
+            </p>
+        </div>
+    
+        <!-- Maladies détectables -->
+        <div class="my-4">
+            <h3>Maladies détectables avec une Chest X-ray</h3>
+            <ul>
+                <li><strong>Pneumonie :</strong> Inflammation des poumons due à une infection bactérienne ou virale.</li>
+                <li><strong>Tuberculose :</strong> Maladie infectieuse chronique qui affecte principalement les poumons.</li>
+                <li><strong>Épanchement pleural :</strong> Accumulation de liquide autour des poumons.</li>
+                <li><strong>Tumeurs pulmonaires :</strong> Y compris le cancer du poumon.</li>
+                <li><strong>Fractures costales :</strong> Diagnostic des blessures liées aux côtes.</li>
+                <li><strong>Insuffisance cardiaque congestive :</strong> Augmentation de la taille du cœur visible sur l'image.</li>
+            </ul>
+        </div>
+        
+
+        <!-- Titre principal -->
+        <h2 class="text-center text-primary mb-4">Différences entre la Radiographie Thoracique (X-ray) et le Chest CT </h2>
+
+        <!-- Comparaison des méthodes -->
+    <div class="row">
+        <div class="col-md-6">
+            <h3>Radiographie Thoracique (X-ray)</h3>
+            <p>La radiographie thoracique est une méthode simple et rapide d'imagerie médicale qui utilise une faible dose de rayons X pour capturer une vue globale de la poitrine. Elle est couramment utilisée comme première ligne d'investigation.</p>
+            <ul>
+                <li><strong>Avantages :</strong> Rapide, peu coûteuse, faible dose de radiation.</li>
+                <li><strong>Limites :</strong> Moins précise pour les détails fins et les diagnostics complexes.</li>
+                <li><strong>Indications :</strong> Détection de fractures, pneumonies, élargissements cardiaques, etc.</li>
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <h3>Tomodensitogramme Thoracique (Chest CT)</h3>
+            <p>Le Chest CT offre une vue en coupe détaillée des structures thoraciques en utilisant des rayons X à haute résolution combinés à une reconstruction informatique. C'est une méthode avancée pour des diagnostics plus complexes.</p>
+            <ul>
+                <li><strong>Avantages :</strong> Précision élevée, visualisation en 3D, utile pour détecter des anomalies subtiles.</li>
+                <li><strong>Limites :</strong> Plus coûteux, exposition à une dose plus élevée de radiation.</li>
+                <li><strong>Indications :</strong> Détection de tumeurs, embolies pulmonaires, maladies interstitielles pulmonaires.</li>
+            </ul>
+        </div>
+    </div>
+
+
+
+
+        <!-- Avantages et solutions aux limites -->
+        <div class="my-4">
+            <h3>Avantages, Limites et Solutions</h3>
+            <p><strong>Avantages :</strong></p>
+            <ul>
+                <li>Examen rapide et non invasif.</li>
+                <li>Peu coûteux et largement accessible.</li>
+            </ul>
+            <p><strong>Limites :</strong></p>
+            <ul>
+                <li>Manque de détails pour les tissus mous ou les petites lésions.</li>
+                <li>Ne permet pas une évaluation en profondeur des structures complexes.</li>
+            </ul>
+            <p><strong>Solutions :</strong> En cas de doute, les médecins peuvent demander des examens complémentaires comme un scanner CT ou une IRM pour obtenir des détails plus précis.</p>
+        </div>
+    </div>
+    
+    
+    
+    <script>
+        const dropArea = document.getElementById('dropArea');
+        const fileInput = document.getElementById('fileInput');
+        const form = document.getElementById('imageForm');
+
+        // Lorsque la zone est cliquée, ouvrir la boîte de dialogue
+        dropArea.addEventListener('click', () => fileInput.click());
+
+        // Effet de glisser-déposer
+        dropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropArea.style.backgroundColor = '#e0f0ff';
+        });
+
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.style.backgroundColor = '#f0f8ff';
+        });
+
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.style.backgroundColor = '#f0f8ff';
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files; // Lier les fichiers à l'input
+                form.submit(); // Soumettre automatiquement le formulaire
+            }
+        });
+
+        // Soumettre le formulaire dès qu'un fichier est sélectionné via la boîte de dialogue
+        fileInput.addEventListener('change', () => {
+            form.submit(); // Soumettre automatiquement le formulaire
+        });
+    </script>
+
+
+{% endblock %}
