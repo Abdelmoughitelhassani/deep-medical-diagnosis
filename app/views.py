@@ -9,6 +9,7 @@ import tensorflow as tf
 from tensorflow.keras.models import load_model
 
 
+
 @csrf_exempt
 def chatbot_response(request):
     """
